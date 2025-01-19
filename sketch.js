@@ -1,4 +1,4 @@
-const MAZE_SIZE = 10
+const MAZE_SIZE = 20
 const CANVAS_SIZE = 300
 const CELL_SIZE = CANVAS_SIZE/MAZE_SIZE
 
@@ -48,7 +48,7 @@ class Maze {
         break;
       case Maze.BOTTOM:
         this.grid[y][x] &= ~Maze.BIT_DOWN
-        if (y < MAZE_SIZE-1)
+        if (y < this.size-1)
           this.grid[y+1][x] &= ~Maze.BIT_UP
         break;
       case Maze.LEFT:
@@ -58,7 +58,7 @@ class Maze {
         break;
       case Maze.RIGHT:
         this.grid[y][x] &= ~Maze.BIT_RIGHT
-        if (x < MAZE_SIZE-1)
+        if (x < this.size-1)
           this.grid[y][x+1] &= ~Maze.BIT_LEFT
         break;
     }
@@ -73,7 +73,7 @@ class Maze {
         break;
       case Maze.BOTTOM:
         this.grid[y][x] |= Maze.BIT_DOWN
-        if (y < MAZE_SIZE-1) 
+        if (y < this.size-1) 
           this.grid[y+1][x] |= Maze.BIT_UP
         break;
       case Maze.LEFT:
@@ -83,7 +83,7 @@ class Maze {
         break;
       case Maze.RIGHT:
         this.grid[y][x] |= Maze.BIT_RIGHT
-        if (x < MAZE_SIZE-1) 
+        if (x < this.size-1) 
           this.grid[y][x+1] |= Maze.BIT_LEFT
         break;
     }
@@ -99,6 +99,20 @@ class Maze {
         return x>0
       case Maze.RIGHT:
         return x<this.size-1
+    }
+  }
+
+  // returns [x,y]
+  getCell(x, y, direction) {
+    switch(direction) {
+      case Maze.TOP:
+        return [x, y-1]
+      case Maze.BOTTOM:
+        return [x, y+1]
+      case Maze.LEFT:
+        return [x-1, y]
+      case Maze.RIGHT:
+        return [x+1, y]
     }
   }
 
@@ -120,9 +134,28 @@ class Maze {
   fill(x,y) {
     this.grid[y][x] |= Maze.BIT_FILL
   }
+
+  render() {
+    for (const y of this.grid.keys()) {
+      for (const x of this.grid[y].keys()) {
+        push()
+        strokeWeight(0);
+        if (this.isFilled(x,y))
+          rect(CELL_SIZE*x, CELL_SIZE*y, CELL_SIZE, CELL_SIZE)
+        pop()
+        if (this.hasWall(x,y,Maze.TOP))
+          line(CELL_SIZE*x, CELL_SIZE*y, CELL_SIZE*(x+1), CELL_SIZE*y)
+        if (this.hasWall(x,y,Maze.BOTTOM))
+          line(CELL_SIZE*x, CELL_SIZE*(y+1), CELL_SIZE*(x+1), CELL_SIZE*(y+1))
+        if (this.hasWall(x,y,Maze.LEFT))
+          line(CELL_SIZE*x, CELL_SIZE*y, CELL_SIZE*x, CELL_SIZE*(y+1))
+        if (this.hasWall(x,y,Maze.RIGHT))
+          line(CELL_SIZE*(x+1), CELL_SIZE*y, CELL_SIZE*(x+1), CELL_SIZE*(y+1))
+      }
+    }
+  }
 }
 
-class NewMaze
 
 // duck typing moment
 class RandDFS {
@@ -169,32 +202,61 @@ class RandDFS {
       }  
     }
   }
+
+  render() {
+    push()
+    fill(250, 149, 73)
+    circle(CELL_SIZE*this.pointer.x+CELL_SIZE/2, CELL_SIZE*this.pointer.y+CELL_SIZE/2, CELL_SIZE/3)
+    pop()
+  }
 }
 
 
 class RandPrim {
+  frontier = []
 
-}
+  constructor(maze, xInit=0, yInit=0) {
+    this.maze = maze
 
-
-function drawMaze(maze) {
-  for (const y of maze.grid.keys()) {
-    for (const x of maze.grid[y].keys()) {
-      push()
-      strokeWeight(0);
-      if (maze.isFilled(x,y))
-        rect(CELL_SIZE*x, CELL_SIZE*y, CELL_SIZE, CELL_SIZE)
-      pop()
-      if (maze.hasWall(x,y,Maze.TOP))
-        line(CELL_SIZE*x, CELL_SIZE*y, CELL_SIZE*(x+1), CELL_SIZE*y)
-      if (maze.hasWall(x,y,Maze.BOTTOM))
-        line(CELL_SIZE*x, CELL_SIZE*(y+1), CELL_SIZE*(x+1), CELL_SIZE*(y+1))
-      if (maze.hasWall(x,y,Maze.LEFT))
-        line(CELL_SIZE*x, CELL_SIZE*y, CELL_SIZE*x, CELL_SIZE*(y+1))
-      if (maze.hasWall(x,y,Maze.RIGHT))
-        line(CELL_SIZE*(x+1), CELL_SIZE*y, CELL_SIZE*(x+1), CELL_SIZE*(y+1))
+    this.maze.fill(xInit, yInit)
+    for (const i of Array(4).keys()) {
+      if (this.maze.hasWall(xInit, yInit, i) 
+          && this.maze.hasCell(xInit, yInit, i)
+          && !this.maze.isFilled(xInit, yInit, i))
+        this.frontier.push(this.maze.getCell(xInit, yInit, i))
     }
   }
+
+  tick() {
+    if (this.frontier.length == 0) return
+    do {
+      var rand = this.frontier.splice(Math.floor(Math.random()*this.frontier.length), 1)[0]
+      if (this.frontier.length == 0) return
+    } while (this.maze.isFilled(rand[0], rand[1]))
+    this.maze.fill(rand[0], rand[1])
+
+    let targets = []
+    for (const i of Array(4).keys()) {
+      if (this.maze.hasWall(rand[0], rand[1], i) && this.maze.hasCell(rand[0], rand[1], i)) {
+        if (this.maze.isFilled(rand[0], rand[1], i))
+          targets.push(i)
+        else
+          this.frontier.push(this.maze.getCell(rand[0], rand[1], i))
+      }
+    }
+    this.maze.removeWall(rand[0], rand[1], targets[Math.floor(Math.random()*targets.length)])
+
+    console.log(this.frontier)
+    console.log(rand)
+  }
+
+  render() {
+
+  }
+}
+
+function drawMaze(maze) {
+  
 }
 
 function drawPointer(pointer) {
@@ -216,14 +278,14 @@ function setup() {
   frameRate(60);
 
   maze = new Maze(MAZE_SIZE)
-  alg = new RandDFS(maze, 3,5)
+  alg = new RandPrim(maze, 2,2)
   console.log(maze.grid)
 }
 
 function draw() {
   background(30);
-  drawMaze(maze)
-  drawPointer(alg.pointer)
+  maze.render()
+  alg.render()
   alg.tick()
 }
 
