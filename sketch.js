@@ -156,57 +156,54 @@ class Maze {
   }
 }
 
+class NewMaze {
+  grid = []
+
+  constructor (size, xinit, yInit) {
+
+  }
+
+
+}
 
 // duck typing moment
 class RandDFS {
+  current = []
   pointer = {x:0, y:0}
   history = []
 
   constructor(maze, xInit=0, yInit=0) {
     this.maze = maze
-    this.pointer.x = xInit
-    this.pointer.y = yInit
+    this.current[0] = xInit
+    this.current[1] = yInit
   }
 
   tick() {
     let walls = []
     for (const i of Array(4).keys()) {
-      if (this.maze.hasWall(this.pointer.x, this.pointer.y, i) 
-          && this.maze.hasCell(this.pointer.x, this.pointer.y, i)
-          && !this.maze.isFilled(this.pointer.x, this.pointer.y, i))
+      if (this.maze.hasWall(this.current[0], this.current[1], i) 
+          && this.maze.hasCell(this.current[0], this.current[1], i)
+          && !this.maze.isFilled(this.current[0], this.current[1], i))
         walls.push(i)
     }
     if (walls.length == 0) {
       if (this.history.length == 0)
         return
-      this.maze.fill(this.pointer.x, this.pointer.y)
+      this.maze.fill(this.current[0], this.current[1])
       this.pointer = this.history.pop()
     } else {
       let rand = walls[Math.floor(Math.random()*walls.length)]
-      this.maze.fill(this.pointer.x, this.pointer.y)
-      this.maze.removeWall(this.pointer.x, this.pointer.y, rand)
+      this.maze.fill(this.current[0], this.current[1])
+      this.maze.removeWall(this.current[0], this.current[1], rand)
       this.history.push(structuredClone(this.pointer))
-      switch (rand) {
-        case Maze.TOP:
-          this.pointer.y--
-          break;
-        case Maze.BOTTOM:
-          this.pointer.y++
-          break;
-        case Maze.LEFT:
-          this.pointer.x--
-          break;
-        case Maze.RIGHT:
-          this.pointer.x++
-          break;
-      }  
+      this.current = this.maze.getCell(this.current[0], this.current[1], rand)
     }
   }
 
   render() {
     push()
     fill(250, 149, 73)
-    circle(CELL_SIZE*this.pointer.x+CELL_SIZE/2, CELL_SIZE*this.pointer.y+CELL_SIZE/2, CELL_SIZE/3)
+    circle(CELL_SIZE*this.current[0]+CELL_SIZE/2, CELL_SIZE*this.current[1]+CELL_SIZE/2, CELL_SIZE/3)
     pop()
   }
 }
@@ -255,14 +252,78 @@ class RandPrim {
   }
 }
 
-function drawMaze(maze) {
+// class HuntKill {
+//   hunt = false
+//   current = [0,0]
+
+//   constructor(maze, xInit=0, yInit=0) {
+//     this.maze = maze
+//     this.current[0] = xInit
+//     this.current[y] = yInit
+
+//   }
+
+//   tick() {
+//     if (hunt) {
+//       if (this.maze.isFilled(this.current[0], this.current[1])) {
+
+//       } else {
+        
+//       }
+//       return
+//     }
+
+//     let walls = []
+//     for (const i of Array(4).keys()) {
+//       if (this.maze.hasWall(this.current[0], this.current[1], i) 
+//           && this.maze.hasCell(this.current[0], this.current[1], i)
+//           && !this.maze.isFilled(this.current[0], this.current[1], i))
+//         walls.push(i)
+//     }
+//     if (walls.length == 0) {
+//       this.maze.fill(this.current[0], this.current[1])
+//       current = [0,0]
+//       hunt = true
+//     } else {
+//       let rand = walls[Math.floor(Math.random()*walls.length)]
+//       this.maze.fill(this.current[0], this.current[1])
+//       this.maze.removeWall(this.current[0], this.current[1], rand)
+//       this.current = this.maze.getCell(this.current[0], this.current[1], rand)
+//     }
+//   }
+
+//   render() {
+
+//   }
+// }
+
+class EllersAlg {
+  row = 0
+  sets = this.grid = Array(size).fill().map(() => Array(size).fill(0))
+  current = [0,0]
   
+
+  constructor(maze, xInit=0, yInit=0) {
+    this.maze = maze
+    currentRow = Array(maze.size).fill(0)
+    nextRow = Array(maze.size).fill(0)
+
+  }
+
+  tick() {
+    this.currentRow = 
+  }
+
+  render() {
+
+  }
 }
+
 
 function drawPointer(pointer) {
   push()
   fill(250, 149, 73)
-  circle(CELL_SIZE*pointer.x+CELL_SIZE/2, CELL_SIZE*pointer.y+CELL_SIZE/2, CELL_SIZE/3)
+  circle(CELL_SIZE*current[0]+CELL_SIZE/2, CELL_SIZE*current[1]+CELL_SIZE/2, CELL_SIZE/3)
   pop()
 }
 
