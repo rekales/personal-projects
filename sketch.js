@@ -311,7 +311,7 @@ class EllersAlg {
   }
 
   tick() {
-    this.currentRow = 
+    // this.currentRow = 
   }
 
   render() {
